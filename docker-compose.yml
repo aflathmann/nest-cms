@@ -1,0 +1,40 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: supersecret
+      MYSQL_DATABASE: appdb
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports: ["3306:3306"]
+
+  flyway:
+    image: flyway/flyway:10
+    depends_on: [db]
+    command: -url=jdbc:mysql://db:3306/appdb -user=root -password=supersecret -connectRetries=20 migrate
+    volumes:
+      - ./migrations:/flyway/sql
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: demo_nest
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Pass DB connection info to your Nest app (TypeORM/Prisma/etc. can read these)
+      DATABASE_HOST: db
+      DATABASE_PORT: "3306"
+      DATABASE_USER: appuser
+      DATABASE_PASSWORD: apppass
+      DATABASE_NAME: appdb
+    ports:
+      - "3000:3000"
+    depends_on:
+      flyway:
+        condition: service_completed_successfully
+    # Optional: wait for the DB port if your app doesn't retry its own connection
+    # command: ["sh", "-c", "apk add --no-cache netcat-openbsd && while ! nc -z db 3306; do sleep 1; done; node dist/main.js"]
+
+volumes:
+  dbdata:
