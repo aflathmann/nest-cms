@@ -1,0 +1,77 @@
+import { readFile, writeFile } from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
+
+import {
+  CreateMessageDto,
+  UpdateMessageDto,
+  MessageResponseDto,
+} from 'src/dto/message.dto';
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class MessagesRepository {
+  constructor() {
+    // Initialize your database connection here
+  }
+
+  private messageFile = 'messages.json';
+
+  private async readMessagesFile(): Promise<MessageResponseDto[]> {
+    try {
+      const data = await readFile(this.messageFile, 'utf-8');
+      return JSON.parse(data) as MessageResponseDto[];
+    } catch (error) {
+      console.error('Error reading messages file:', error);
+      return [];
+    }
+  }
+
+  private async writeMessagesFile(
+    messages: MessageResponseDto[],
+  ): Promise<void> {
+    await writeFile(this.messageFile, JSON.stringify(messages, null, 2));
+  }
+
+  async findOne(id: string): Promise<MessageResponseDto | null> {
+    const messages = await this.readMessagesFile();
+    const message = messages.find((msg) => msg.id === id);
+    return message || null;
+  }
+
+  async findAll(): Promise<MessageResponseDto[]> {
+    return this.readMessagesFile();
+  }
+
+  async create(data: CreateMessageDto): Promise<MessageResponseDto> {
+    const messages = await this.readMessagesFile();
+    const id = uuidv4();
+    const newMessage = { id, ...data };
+    messages.push(newMessage);
+    await this.writeMessagesFile(messages);
+    return newMessage;
+  }
+
+  async update(
+    id: string,
+    data: UpdateMessageDto,
+  ): Promise<MessageResponseDto> {
+    const messages = await this.readMessagesFile();
+    const messageIndex = messages.findIndex((msg) => msg.id === id);
+    if (messageIndex === -1) {
+      throw new Error('Message not found');
+    }
+    messages[messageIndex] = { id, ...data };
+    await this.writeMessagesFile(messages);
+    return { id, ...data };
+  }
+
+  async delete(id: string): Promise<void> {
+    const messages = await this.readMessagesFile();
+    const messageIndex = messages.findIndex((msg) => msg.id === id);
+    if (messageIndex === -1) {
+      throw new Error('Message not found');
+    }
+    messages.splice(messageIndex, 1);
+    await this.writeMessagesFile(messages);
+  }
+}

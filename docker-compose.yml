@@ -4,14 +4,23 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: supersecret
       MYSQL_DATABASE: appdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    command: --default-authentication-plugin=mysql_native_password --skip-ssl
     volumes:
       - dbdata:/var/lib/mysql
     ports: ["3306:3306"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
   flyway:
     image: flyway/flyway:10
-    depends_on: [db]
-    command: -url=jdbc:mysql://db:3306/appdb -user=root -password=supersecret -connectRetries=20 migrate
+    depends_on: 
+      db:
+        condition: service_healthy
+    command: -url=jdbc:mysql://db:3306/appdb?allowPublicKeyRetrieval=true&useSSL=false -user=appuser -password=apppassword -connectRetries=60 migrate
     volumes:
       - ./migrations:/flyway/sql
   app:
@@ -26,15 +35,13 @@ services:
       DATABASE_HOST: db
       DATABASE_PORT: "3306"
       DATABASE_USER: appuser
-      DATABASE_PASSWORD: apppass
+      DATABASE_PASSWORD: apppassword
       DATABASE_NAME: appdb
     ports:
       - "3000:3000"
     depends_on:
       flyway:
         condition: service_completed_successfully
-    # Optional: wait for the DB port if your app doesn't retry its own connection
-    # command: ["sh", "-c", "apk add --no-cache netcat-openbsd && while ! nc -z db 3306; do sleep 1; done; node dist/main.js"]
 
 volumes:
   dbdata:

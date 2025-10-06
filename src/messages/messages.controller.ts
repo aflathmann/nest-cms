@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import {
   ApiBody,
   ApiParam,
@@ -6,11 +14,18 @@ import {
   ApiResponse,
   ApiOperation,
 } from '@nestjs/swagger';
-import { CreateMessageDto, MessageResponseDto } from '../dto/message.dto';
+import {
+  CreateMessageDto,
+  MessageResponseDto,
+  UpdateMessageDto,
+} from '../dto/message.dto';
+import { MessagesService } from './messages.service';
 
 @ApiTags('messages')
 @Controller('messages')
 export class MessagesController {
+  constructor(private readonly messagesService: MessagesService) {}
+
   @Get()
   @ApiOperation({ summary: 'List all messages' })
   @ApiResponse({
@@ -18,8 +33,8 @@ export class MessagesController {
     description: 'List of messages',
     type: [MessageResponseDto],
   })
-  listMessages(): MessageResponseDto[] {
-    return [];
+  async findAll(): Promise<MessageResponseDto[]> {
+    return await this.messagesService.findAll();
   }
 
   @Post()
@@ -30,23 +45,23 @@ export class MessagesController {
     description: 'The created message',
     type: MessageResponseDto,
   })
-  createMessage(@Body() body: CreateMessageDto) {
-    console.log(body);
-    return { id: '1', ...body };
+  async createMessage(@Body() body: CreateMessageDto) {
+    const result = await this.messagesService.create(body);
+    return result;
   }
 
   @Patch('/:id')
   @ApiOperation({ summary: 'Update a message by ID' })
   @ApiParam({ name: 'id', type: String })
-  @ApiBody({ type: CreateMessageDto })
+  @ApiBody({ type: UpdateMessageDto })
   @ApiResponse({
     status: 200,
     description: 'The updated message',
     type: MessageResponseDto,
   })
-  updateMessage(@Param('id') id: string, @Body() body: CreateMessageDto) {
-    console.log(id, body);
-    return { id, ...body };
+  async updateMessage(@Param('id') id: string, @Body() body: CreateMessageDto) {
+    const result = await this.messagesService.update(id, body);
+    return result;
   }
 
   @Get('/:id')
@@ -57,11 +72,20 @@ export class MessagesController {
     description: 'The found message',
     type: MessageResponseDto,
   })
-  getMessage(@Param('id') id: string): MessageResponseDto {
-    console.log(id);
-    return {
-      id,
-      content: `message ${id}`,
-    };
+  async getMessage(
+    @Param('id') id: string,
+  ): Promise<MessageResponseDto | null> {
+    return await this.messagesService.findOne(id);
+  }
+
+  @Delete('/:id')
+  @ApiOperation({ summary: 'Delete a message by ID' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiResponse({
+    status: 204,
+    description: 'The message has been deleted',
+  })
+  async deleteMessage(@Param('id') id: string): Promise<void> {
+    return await this.messagesService.delete(id);
   }
 }
