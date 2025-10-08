@@ -1,11 +1,10 @@
 import { readFile, writeFile } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 
-import {
-  CreateMessageDto,
-  UpdateMessageDto,
-  MessageResponseDto,
-} from 'src/dto/message.dto';
+import { CreateMessageDto } from './dto/create-message.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
+import { MessageResponseDto } from './dto/message-response.dto';
+
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -45,7 +44,7 @@ export class MessagesRepository {
   async create(data: CreateMessageDto): Promise<MessageResponseDto> {
     const messages = await this.readMessagesFile();
     const id = uuidv4();
-    const newMessage = { id, ...data };
+    const newMessage = { id, ownerId: 'abc123', ...data };
     messages.push(newMessage);
     await this.writeMessagesFile(messages);
     return newMessage;
@@ -60,9 +59,15 @@ export class MessagesRepository {
     if (messageIndex === -1) {
       throw new Error('Message not found');
     }
-    messages[messageIndex] = { id, ...data };
+    const updatedMessage: MessageResponseDto = {
+      id,
+      ownerId: 'abc123',
+      title: data.title ?? messages[messageIndex].title,
+      content: data.content ?? messages[messageIndex].content,
+    };
+    messages[messageIndex] = updatedMessage;
     await this.writeMessagesFile(messages);
-    return { id, ...data };
+    return updatedMessage;
   }
 
   async delete(id: string): Promise<void> {

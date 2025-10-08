@@ -1,36 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
-import {
-  CreateUserDto,
-  UpdateUserDto,
-  UserResponseDto,
-} from 'src/dto/user.dto';
+import { UpdateUserDto } from 'src/users/dto/update-user.dto';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { UserResponseDto } from 'src/users/dto/user-response.dto';
+
+import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
+  constructor(private readonly usersRepository: UsersRepository) {}
   // Implement user-related business logic here
 
   async findAll(): Promise<UserResponseDto[]> {
-    // Logic to retrieve all users
-    return [];
+    return await this.usersRepository.findAll();
   }
 
   async findOne(id: string): Promise<UserResponseDto | null> {
-    // Logic to retrieve a user by ID
-    return null;
+    const user = await this.usersRepository.findOne(id);
+    if (!user) {
+      throw new NotFoundException('Benutzer nicht gefunden');
+    }
+    return user;
   }
 
-  async createUser(data: CreateUserDto): Promise<UserResponseDto> {
-    // Logic to create a new user
-    return { id: '1', username: data.username, email: data.email };
+  async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    return this.usersRepository.create(createUserDto);
   }
 
-  async updateUser(id: string, data: UpdateUserDto): Promise<UserResponseDto | null> {
-    // Logic to update an existing user
-    return { id, username: data.username, email: data.email };
+  async update(
+    id: string,
+    data: UpdateUserDto,
+  ): Promise<UserResponseDto | null> {
+    return this.usersRepository.update(id, data);
   }
 
-  async deleteUser(id: string): Promise<void> {
-    // Logic to delete a user by ID
+  async delete(id: string): Promise<void> {
+    return this.usersRepository.delete(id);
   }
 }

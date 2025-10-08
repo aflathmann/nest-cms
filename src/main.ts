@@ -1,18 +1,24 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { NestFactory } from '@nestjs/core';
-//import { AppModule } from './app.module';
-import { MessagesModule } from './messages/messages.module';
+import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { readFileSync } from 'fs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(MessagesModule);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const packageJson = JSON.parse(readFileSync('package.json').toString());
+  console.log(`Starting ${packageJson.name} v${packageJson.version}`);
+
+  const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
-    .setTitle('Messages API')
-    .setDescription('API for managing messages')
-    .setVersion('1.0')
+    .setTitle(packageJson.name)
+    .setDescription(packageJson.description)
+    .setVersion(packageJson.version)
     .addBearerAuth()
     .build();
 

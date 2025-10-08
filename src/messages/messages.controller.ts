@@ -14,11 +14,11 @@ import {
   ApiResponse,
   ApiOperation,
 } from '@nestjs/swagger';
-import {
-  CreateMessageDto,
-  MessageResponseDto,
-  UpdateMessageDto,
-} from '../dto/message.dto';
+
+import { CreateMessageDto } from './dto/create-message.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
+import { MessageResponseDto } from './dto/message-response.dto';
+
 import { MessagesService } from './messages.service';
 
 @ApiTags('messages')
@@ -45,7 +45,7 @@ export class MessagesController {
     description: 'The created message',
     type: MessageResponseDto,
   })
-  async createMessage(@Body() body: CreateMessageDto) {
+  async create(@Body() body: CreateMessageDto) {
     const result = await this.messagesService.create(body);
     return result;
   }
@@ -59,7 +59,7 @@ export class MessagesController {
     description: 'The updated message',
     type: MessageResponseDto,
   })
-  async updateMessage(@Param('id') id: string, @Body() body: CreateMessageDto) {
+  async update(@Param('id') id: string, @Body() body: UpdateMessageDto) {
     const result = await this.messagesService.update(id, body);
     return result;
   }

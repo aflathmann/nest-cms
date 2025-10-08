@@ -1,8 +1,7 @@
-import {
-  CreateMessageDto,
-  MessageResponseDto,
-  UpdateMessageDto,
-} from 'src/dto/message.dto';
+import { CreateMessageDto } from './dto/create-message.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
+import { MessageResponseDto } from './dto/message-response.dto';
+
 import { MessagesRepository } from './messages.repository';
 
 import { Injectable, NotFoundException } from '@nestjs/common';
