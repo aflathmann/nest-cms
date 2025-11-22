@@ -21,7 +21,7 @@ import { MessageResponseDto } from './dto/message-response.dto';
 
 import { MessagesService } from './messages.service';
 
-@ApiTags('messages')
+@ApiTags('Messages')
 @Controller('messages')
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}

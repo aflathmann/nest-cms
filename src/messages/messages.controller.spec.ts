@@ -20,8 +20,9 @@ describe('MessagesController', () => {
     it('should create a new message', () => {
       const createMessageDto = {
         content: 'Hello, world!',
+        title: 'Greeting',
       };
-      expect(controller.createMessage(createMessageDto)).toEqual({
+      expect(controller.create(createMessageDto)).toEqual({
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         id: expect.any(String),
         ...createMessageDto,
@@ -32,8 +33,8 @@ describe('MessagesController', () => {
   describe('findAll', () => {
     it('should return an array of messages', () => {
       expect(controller.findAll()).toEqual([
-        { id: '1', content: 'message 1' },
-        { id: '2', content: 'message 2' },
+        { id: '1', content: 'message 1', title: 'Greeting' },
+        { id: '2', content: 'message 2', title: 'Greeting' },
       ]);
     });
   });
@@ -43,6 +44,7 @@ describe('MessagesController', () => {
       expect(controller.getMessage('1')).toEqual({
         id: '1',
         content: 'message 1',
+        title: 'Greeting',
       });
     });
   });
@@ -50,7 +52,7 @@ describe('MessagesController', () => {
   describe('updateMessage', () => {
     it('should update a message by ID', () => {
       const updateMessageDto = { content: 'Updated message' };
-      expect(controller.updateMessage('1', updateMessageDto)).toEqual({
+      expect(controller.update('1', updateMessageDto)).toEqual({
         id: '1',
         ...updateMessageDto,
       });
