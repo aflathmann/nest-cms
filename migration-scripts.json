@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d ormconfig.ts src/migrations/Migration",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d ormconfig.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d ormconfig.ts",
+    "migration:show": "typeorm-ts-node-commonjs migration:show -d ormconfig.ts"
+  }
+}

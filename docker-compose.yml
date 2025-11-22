@@ -2,27 +2,19 @@ services:
   db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: supersecret
-      MYSQL_DATABASE: appdb
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: apppassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     command: --default-authentication-plugin=mysql_native_password --skip-ssl
     volumes:
       - dbdata:/var/lib/mysql
-    ports: ["3306:3306"]
+    ports: ["${MYSQL_PORT}:${MYSQL_PORT}"]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
 
-  flyway:
-    image: flyway/flyway:10
-    depends_on: 
-      db:
-        condition: service_healthy
-    command: -url=jdbc:mysql://db:3306/appdb?allowPublicKeyRetrieval=true&useSSL=false -user=appuser -password=apppassword -connectRetries=60 migrate
-    volumes:
-      - ./migrations:/flyway/sql
   app:
     build:
       context: .
@@ -31,17 +23,17 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      # Pass DB connection info to your Nest app (TypeORM/Prisma/etc. can read these)
       DATABASE_HOST: db
-      DATABASE_PORT: "3306"
-      DATABASE_USER: appuser
-      DATABASE_PASSWORD: apppassword
-      DATABASE_NAME: appdb
+      DATABASE_PORT: "${MYSQL_PORT}"
+      DATABASE_USER: ${MYSQL_USER}
+      DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+      DATABASE_NAME: ${MYSQL_DATABASE}
+      JWT_KEY: your_jwt_secret_key
     ports:
       - "3000:3000"
     depends_on:
-      flyway:
-        condition: service_completed_successfully
+      db:
+        condition: service_healthy
 
 volumes:
   dbdata:
