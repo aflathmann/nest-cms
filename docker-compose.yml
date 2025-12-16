@@ -28,6 +28,7 @@ services:
       DATABASE_USER: ${MYSQL_USER}
       DATABASE_PASSWORD: ${MYSQL_PASSWORD}
       DATABASE_NAME: ${MYSQL_DATABASE}
+      DATABASE_TYPE: mysql
       JWT_KEY: your_jwt_secret_key
     ports:
       - "3000:3000"

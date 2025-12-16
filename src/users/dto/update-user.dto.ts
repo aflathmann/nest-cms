@@ -1,16 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { IsString } from 'class-validator';
+import { IsString, IsArray, IsIn, IsEmail } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Role } from 'src/common';
 
 export class UpdateUserDto {
-  @IsString()
-  @ApiProperty({
-    description: 'The username of the user',
-    example: 'john_doe',
-  })
-  username?: string;
-
-  @IsString()
+  @IsEmail()
   @ApiProperty({
     description: 'The email of the user',
     example: 'john_doe@example.com',
@@ -23,6 +17,17 @@ export class UpdateUserDto {
     example: 'password123',
   })
   password?: string;
+
+  @IsArray()
+  @IsIn([Role.USER, Role.ADMIN, Role.MODERATOR, Role.EDITOR], { each: true })
+  @IsString({ each: true })
+  @ApiProperty({
+    description: 'The roles assigned to the user',
+    example: ['USER'],
+    isArray: true,
+    type: [String],
+  })
+  roles: Role[];
 
   @IsString()
   @ApiProperty({

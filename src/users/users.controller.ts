@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Patch, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  UseGuards,
+  UploadedFile,
+  Query,
+} from '@nestjs/common';
 import { Body, Delete, Param } from '@nestjs/common/decorators';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Roles, Role } from '../common/decorators';
@@ -9,6 +17,9 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserResponseDto } from 'src/users/dto/user-response.dto';
 
 import { UsersService } from './users.service';
+
+import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -24,8 +35,10 @@ export class UsersController {
     description: 'List of users',
     type: [UserResponseDto],
   })
-  async findAll(): Promise<UserResponseDto[]> {
-    return await this.usersService.findAll();
+  async findAll(
+    @Query() query: PaginationQueryDto,
+  ): Promise<PaginatedResponseDto<UserResponseDto>> {
+    return await this.usersService.findAll(query);
   }
 
   @Post()
@@ -72,5 +85,19 @@ export class UsersController {
   })
   async delete(@Param('id') id: string): Promise<void> {
     return await this.usersService.delete(id);
+  }
+
+  @Post(':id/avatar')
+  @ApiOperation({ summary: 'Upload or update user avatar' })
+  @ApiResponse({
+    status: 200,
+    description: 'Avatar uploaded/updated successfully',
+  })
+  async uploadAvatar(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<void> {
+    // Implementation for avatar upload would go here
+    await this.usersService.uploadAvatar(id, file);
   }
 }

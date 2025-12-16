@@ -4,19 +4,42 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostResponseDto } from './dto/post-response.dto';
 
-import { PostsRepository } from './posts.repository';
-
+import { PaginatedResponseDto, PaginationQueryDto } from 'src/common/dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Post } from './post.entity';
 @Injectable()
 export class PostsService {
-  constructor(private readonly postsRepository: PostsRepository) {}
+  constructor(
+    @InjectRepository(Post) private readonly postsRepository: Repository<Post>,
+  ) {}
 
   // Implement post-related business logic here
-  async findAll(): Promise<PostResponseDto[]> {
-    return await this.postsRepository.findAll();
+  async findAll(
+    query: PaginationQueryDto,
+  ): Promise<PaginatedResponseDto<PostResponseDto>> {
+    const { page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    const [items, totalItems] = await this.postsRepository.findAndCount({
+      take: limit,
+      skip: skip,
+    });
+
+    return {
+      data: items as PostResponseDto[],
+      meta: {
+        totalItems,
+        itemCount: items.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      },
+    };
   }
 
   async findOne(id: string): Promise<PostResponseDto> {
-    const post = await this.postsRepository.findOne(id);
+    const post = await this.postsRepository.findOne({ where: { id } });
     if (!post) {
       throw new NotFoundException('Post not found');
     }
@@ -24,25 +47,27 @@ export class PostsService {
   }
 
   async create(createPostDto: CreatePostDto): Promise<PostResponseDto> {
-    return await this.postsRepository.create(createPostDto);
+    const post = this.postsRepository.create(createPostDto);
+    return this.postsRepository.save(post);
   }
 
   async update(
     id: string,
     updatePostDto: UpdatePostDto,
-  ): Promise<PostResponseDto> {
-    const existingPost = await this.postsRepository.findOne(id);
+  ): Promise<PostResponseDto | null> {
+    const existingPost = await this.postsRepository.findOne({ where: { id } });
     if (!existingPost) {
       throw new NotFoundException('Post not found');
     }
-    return await this.postsRepository.update(id, updatePostDto);
+    await this.postsRepository.update(id, updatePostDto);
+    return this.postsRepository.findOne({ where: { id } });
   }
 
   async delete(id: string): Promise<void> {
-    const existingPost = await this.postsRepository.findOne(id);
+    const existingPost = await this.postsRepository.findOne({ where: { id } });
     if (!existingPost) {
       throw new NotFoundException('Post not found');
     }
-    return await this.postsRepository.delete(id);
+    await this.postsRepository.delete(id);
   }
 }

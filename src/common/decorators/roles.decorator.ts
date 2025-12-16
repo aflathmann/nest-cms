@@ -7,5 +7,7 @@ export enum Role {
   EDITOR = 'editor',
 }
 
+export const RolesList = Object.values(Role);
+
 export const ROLES_KEY = 'roles';
 export const Roles = (...roles: Role[]) => SetMetadata(ROLES_KEY, roles);

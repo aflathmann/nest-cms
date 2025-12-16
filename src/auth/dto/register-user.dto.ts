@@ -1,40 +1,20 @@
-import {
-  IsArray,
-  IsNotEmpty,
-  IsString,
-  ArrayMinSize,
-  IsIn,
-  IsEmail
-} from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Role } from 'src/common';
 
-export class CreateUserDto {
-  @IsEmail()
+export class RegisterUserDto {
+  @IsString()
   @IsNotEmpty()
   @ApiProperty({
     description: 'The email of the user',
-    example: 'john_doe@example.com',
+    example: 'user@example.com',
   })
   email: string;
-
-  @IsArray()
-  @IsIn([Role.USER, Role.ADMIN, Role.MODERATOR, Role.EDITOR], { each: true })
-  @IsString({ each: true })
-  @ArrayMinSize(1)
-  @ApiProperty({
-    description: 'The roles assigned to the user',
-    example: [Role.USER],
-    isArray: true,
-    type: [String],
-  })
-  roles: Role[];
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
     description: 'The password of the user',
-    example: 'password123',
+    example: 'strongPassword123',
   })
   password: string;
 

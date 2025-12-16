@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Delete, Patch, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Patch,
+  Body,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { Param } from '@nestjs/common/decorators';
@@ -6,6 +14,7 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostResponseDto } from './dto/post-response.dto';
+import { PaginatedResponseDto, PaginationQueryDto } from 'src/common/dto';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -18,8 +27,10 @@ export class PostsController {
   }
 
   @Get()
-  findAll(): Promise<PostResponseDto[]> {
-    return this.postsService.findAll();
+  findAll(
+    @Query() query: PaginationQueryDto,
+  ): Promise<PaginatedResponseDto<PostResponseDto>> {
+    return this.postsService.findAll(query);
   }
 
   @Get(':id')
@@ -31,7 +42,7 @@ export class PostsController {
   update(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
-  ): Promise<PostResponseDto> {
+  ): Promise<PostResponseDto | null> {
     return this.postsService.update(id, updatePostDto);
   }
 

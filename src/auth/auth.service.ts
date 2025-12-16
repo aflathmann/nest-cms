@@ -4,6 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { PasswordUtil } from 'src/common';
 import { JwtService } from '@nestjs/jwt';
+import { UsersService } from '../users/users.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AuthService {
@@ -11,19 +13,21 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
+    private usersService: UsersService,
+    private notificationsService: NotificationsService,
   ) {}
   // Auth service methods would go here
   async login(
-    username: string,
+    email: string,
     password: string,
   ): Promise<{ access_token: string } | null> {
-    if (!username || !password) {
+    if (!email || !password) {
       throw new UnauthorizedException();
     }
 
     const user = await this.userRepository.findOne({
-      where: { username },
-      select: ['id', 'username', 'passwordHash'],
+      where: { email: email },
+      select: ['id', 'passwordHash', 'roles'],
     });
     if (user === null) {
       throw new UnauthorizedException();
@@ -35,7 +39,11 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException();
     }
-    const payload = { sub: user.id, username: user.username };
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      roles: user.roles,
+    };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };

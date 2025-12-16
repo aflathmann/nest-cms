@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
-import { PostsRepository } from './posts.repository';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from '../common/guards/auth.guard';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Post } from './post.entity';
 
 @Module({
-  imports: [],
+  imports: [TypeOrmModule.forFeature([Post])],
   controllers: [PostsController],
-  providers: [PostsService, PostsRepository],
+  providers: [PostsService, { provide: APP_GUARD, useClass: AuthGuard }],
   exports: [PostsService],
 })
 export class PostsModule {}

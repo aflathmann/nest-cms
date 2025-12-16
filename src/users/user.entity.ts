@@ -14,9 +14,6 @@ export class User {
   id: string;
 
   @Column({ unique: true })
-  username: string;
-
-  @Column({ unique: true })
   email: string;
 
   @Exclude()
@@ -40,4 +37,7 @@ export class User {
 
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   passwordChangedAt: Date;
+
+  @Column({ nullable: true })
+  avatarUrl: string;
 }
